@@ -1,0 +1,121 @@
+<?php 
+
+function custom_skill_sector_update(){
+
+    global $wpdb;
+    $table_name = $wpdb->prefix . "sectors";
+    $id = $_GET["id"];
+
+    $sector_q = $wpdb->prepare("SELECT * from $table_name where id=%s", $id);
+    $sector_single = $wpdb->get_row($sector_q, ARRAY_A );
+
+    $validation_messages = [];
+    $optional_validation_messages = [];
+    $success_message = '';
+    $image_url = '';
+    if (isset($_POST['insert'])) {
+
+        $sector_name = isset( $_POST['sector_name'] ) ? sanitize_text_field( $_POST['sector_name'] ) : '';
+        $image_url = isset( $_POST['image_url'] ) ? $_POST['image_url'] : '' ;
+        $external_url = isset( $_POST['external_url'] ) ? filter_var( $_POST['external_url'],FILTER_VALIDATE_URL ) : '';
+
+        //Validate the data
+		if ( strlen( $sector_name ) === 0 ) {
+			$validation_messages[] = esc_html__( 'Please enter a sector name.');
+		}
+
+        //Validate the data
+		if ( strlen( $image_url ) === 0 ) {
+			$validation_messages[] = esc_html__( 'Please enter a image url name.');            
+        }
+
+        if ( strlen( $external_url ) === 0 ) {
+            $validation_messages[] = esc_html__( 'Please enter a external url.');
+        }
+
+
+        if ( empty( $validation_messages ) ) {
+            global $wpdb,$table_prefix;
+            $wp_sectors = $table_prefix.'sectors';
+
+
+
+
+            $data= array(
+                'sector_name'=>$sector_name,
+                'image_url'=>$image_url,
+                'external_url'=> $external_url,
+                'created_at'=>date("Y-m-d H:i:s"),
+                'updated_at'=>date("Y-m-d H:i:s")
+            );
+
+            // die(print_r($data));
+
+            $where = array('id'=>$id);
+
+
+            //die(print_r($data));
+        
+            $update_data = $wpdb->update($wp_sectors,$data,$where);
+
+
+            //die(var_dump($wpdb->last_error));
+
+
+
+            $success_message = esc_html__( 'Skill Sector is successfully updated.' );
+
+        }
+
+         //Display the validation errors
+        if ( ! empty( $validation_messages ) ) {
+            foreach ( $validation_messages as $validation_message ) {
+                echo '<div class="notice notice-error is-dismissible"><p>' . esc_html( $validation_message ) . '</p></div>';
+            }
+        }
+
+        //Display the success message
+        if ( strlen( $success_message ) > 0 ) {
+            $sector_q = $wpdb->prepare("SELECT * from $table_name where id=%s", $id);
+            $sector_single = $wpdb->get_row($sector_q, ARRAY_A );
+            echo '<div class="updated"><p>' . esc_html( $success_message ) . '</p></div>';
+        }
+
+
+
+    }
+
+
+?>
+        
+        <div class="wrap">
+            <h2><?php echo esc_html('Update Sector'); ?> </h2>
+            <form method="post" action="<?php echo $_SERVER['REQUEST_URI']; ?>" enctype="multipart/form-data">
+            <div id="universal-message-container">
+                    <table class='wp-list-table form-table'>
+                        <tr>
+                            <th class="title"><?php echo esc_html('Skill Sector Heading'); ?> </th>
+                            <td><input type="text" name="sector_name" size="100" value="<?php echo $sector_single['sector_name']; ?>"  placeholder="Enter Sector Name" /></td>
+                        </tr>
+                        <tr>
+                                <th class="title"><?php echo esc_html('Image Url');?></th>
+                                <td>
+                                    <input type="text" name="image_url" size="100" value="<?php echo $sector_single['image_url']; ?>"  placeholder="Enter Image Url"   />
+                                </td>
+                            
+                        </tr>
+                        <tr>
+                                <th class="title"><?php echo esc_html('External Url');?></th>
+                                <td>
+                                    <input type="text" name="external_url" size="100" value="<?php echo $sector_single['external_url']; ?>"  placeholder="Enter External Url"   />
+                                </td>
+                            
+                        </tr>
+                    </table>
+                </div>
+                <input type='submit' name="insert" value='Save' class='button'>
+                <a class='button' href="<?php echo admin_url('admin.php?page=custom_skill_sectorCouncil'); ?>">Back To Skill Sector List</a>
+            </form>
+        </div>
+<?php
+}
